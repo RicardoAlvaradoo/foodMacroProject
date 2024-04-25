@@ -1,0 +1,18 @@
+
+        #logo{
+
+        }
+        body{
+            background-color: lightgray;
+
+        }
+        #total-orders{
+            background-color: lightcoral;
+        }
+        #orders-delivered{
+            background-color: burlywood;
+        }
+        #orders-pending{
+            background-color:lightblue ;
+        }
+
