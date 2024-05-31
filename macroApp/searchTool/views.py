@@ -11,7 +11,13 @@ from geopy.geocoders import Nominatim
 from geopy.distance import geodesic
 import json
 import pdb;
+import googlemaps
+import math
 # Create your views here.
+#google docs API - AIzaSyD1D8vo-qjd2CvpeZwJ_CZXi8alrzxl5xQ
+#referer /home
+
+api_key = 'AIzaSyAv-jGzXxceQCb_NvJcqAHRXl08k-a8eR4'
 
 data = {} 
 def searchTool(request):
@@ -41,7 +47,7 @@ def searchTool(request):
                 fat_max = form.cleaned_data['fat_max']
                 #get restaurants
                 print(data)
-                restaurant_list = find_nearby_places(data['latitude'], data['longitude'], 5 )
+                restaurant_list = find_nearby_places(data['latitude'], data['longitude'])
                 print(restaurant_list)
 
                 #get top 3 orders
@@ -55,7 +61,7 @@ def searchTool(request):
         else:
             location_info = request.body.decode("utf-8")
             location_info = json.loads(location_info)
-            print(location_info)
+            print("Data Value", location_info)
             data['latitude'] = location_info['lat']
             data['longitude'] = location_info['lon']
             print(data)
@@ -75,37 +81,41 @@ def restaurant_filter(rest, carb_min, carb_max, cal_min, cal_max, fat_min, fat_m
     food_info = pd.read_excel("ms_annual_data_2022.xlsx", usecols='E, F, L:U' )
     #restaurant, item_name, calories, total
     # _fat, carbohydrates, protein
-    for rest in restaurant_filter:
-        for index, row in food_info.iterrows():
-                if row['restaurant'] == rest:
-                    print( row['item_name'], row['calories'],row['total_fat'], row['carbohydrates'], row['protein'])
-                    if (not(cal_min <= row['calories'] <= cal_max )):
-                        food_score = abs(row['total_fat'] - ((fat_max + fat_min) // 2) ) + abs(row['protein'] - ((pro_max + pro_min) // 2)) + abs(row['carbohydrates'] - ((carb_max + carb_min) // 2))
-                        heapq.heappush(rest_heap, (food_score,[rest,  row['item_name'],row['calories'], row['total_fat'], row['carbohydrates'],row['protein'] ]))
-                        if len(rest_heap) > 3:
-                            heapq.heappop(rest_heap)
+    
+    for index, row in food_info.iterrows():
+            if row['restaurant'] in rest:
+                
+                if ((cal_min <= int(row['calories']) <= cal_max )):
+                    real_calories = 0 if math.isnan(float(row['calories'])) else int(row['calories'])
+                    
+                    real_fat = 0 if math.isnan(float(row['total_fat'])) else int(row['total_fat'])
+                    real_carbs = 0 if math.isnan(float(row['carbohydrates'])) else int(row['carbohydrates'])
+                    real_protein = 0 if math.isnan(float(row['protein'])) else int(row['protein'] )
+                    
+                    food_score = abs(real_fat- ((fat_max + fat_min) // 2) ) + abs(real_protein - ((pro_max + pro_min) // 2)) + abs(real_carbs - ((carb_max + carb_min) // 2))
+                    
+                 
+
+                    food_tuple = (-food_score,(row['restaurant'],  row['item_name'],real_calories, real_fat, real_carbs,real_protein))
+                    
+                    heapq.heappush(rest_heap, food_tuple )
+                    
+                    if len(rest_heap) > 3:
+                        heapq.heappop(rest_heap)
+                        print(rest_heap)
 
     
         
     return rest_heap
 
 
-def find_nearby_places(lat, lon, radius):
-    geolocator = Nominatim(user_agent="Food Macro")
-    location = geolocator.reverse((lat, lon))
-    print(f"\nYour current location: {location}\n")
+def find_nearby_places(lat, lon):
+    gmaps = googlemaps.Client(key = api_key)
+   
+   
+    places_result = gmaps.places_nearby(location=data , radius = 1000, open_now = False, type = 'restaurant')
     
-    query = f"{'restaurant'} near {lat}, {lon}"
-    try:
-        places = geolocator.geocode(query, exactly_one=False, limit=None)
-        if places:
-            for place in places:
-                place_coords = (place.latitude, place.longitude)
-                place_distance = geodesic((lat, lon), place_coords).kilometers
-                if place_distance <= radius:
-                    print(f"{place.address} ({place_distance:.2f} km)")
-        else:
-            print("No nearby places found for the given type.")
-    except:
-        print("Error: Unable to fetch nearby places.")
-
+    locations = []
+    for res in places_result['results']:
+        locations.append(res['name'])
+    return locations
