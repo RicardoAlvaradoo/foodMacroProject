@@ -1,78 +1,68 @@
-
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+from .forms import RestForm
 from django.shortcuts import render, redirect
 
 from django.template import loader
 
 from .forms import RestForm
-from django.conf import settings
+
 import heapq
 import pandas as pd
-import environ
+
 import os
 import json
 import pdb;
 import googlemaps
 import math
-# Create your views here.
-#google docs API - AIzaSyD1D8vo-qjd2CvpeZwJ_CZXi8alrzxl5xQ
-#referer /home
+api_key = os.environ.get('api_key'),
+@api_view(['GET'])
+def getData(request):
+    person = {'name':'Dennis', 'age':28}
+    return Response(person)
 
-api_key = settings.API_KEY
-
-data = {} 
-def searchTool(request):
-    
-    form = RestForm()              
-    print(request)
-    
-    if request.method == "POST":
-        
-       
+data = {'latitude': 32.735232, 'longitude': -96.6524928 } 
+@api_view(['POST'])
+def orders(request):
+        print(request)
         if  request.POST.get('macros') == 'Enter Macros' :
             # create a form instance and populate it with data from the request:
             print(request.POST)
             print(request)
-            form = RestForm(request.POST)
+            serializer = RestForm(request.POST)
             #pdb.set_trace()
             # check whether it's valid:
-            if form.is_valid():
+            if serializer.is_valid():
                 # process the data in form.cleaned_data as required
                 # ...)
                 
-                cal_min = form.cleaned_data['cal_min']
-                cal_max = form.cleaned_data['cal_max']
-                pro_min = form.cleaned_data['pro_min']
-                pro_max = form.cleaned_data['pro_max']
-                carb_min = form.cleaned_data['carb_min']
-                carb_max = form.cleaned_data['carb_max']
-                fat_min = form.cleaned_data['fat_min']
-                fat_max = form.cleaned_data['fat_max']
+                cal_min = serializer.cleaned_data['cal_min']
+                cal_max = serializer.cleaned_data['cal_max']
+                pro_min = serializer.cleaned_data['pro_min']
+                pro_max = serializer.cleaned_data['pro_max']
+                carb_min = serializer.cleaned_data['carb_min']
+                carb_max = serializer.cleaned_data['carb_max']
+                fat_min = serializer.cleaned_data['fat_min']
+                fat_max = serializer.cleaned_data['fat_max']
                 #get restaurants
-             
-                restaurant_list = find_nearby_places(data['latitude'], data['longitude'])
+                
+                restaurant_list = find_nearby_places()
                 print(restaurant_list)
 
                 #get top 3 orders
                 rest_heap = restaurant_filter(restaurant_list, carb_min, carb_max, cal_min, cal_max, fat_min, fat_max, pro_min, pro_max)
-                context = {'rest_heap' : rest_heap}
-                
-                return render(request, 'display.html',context )
+                restaurant_info = {'data' : rest_heap}
+                info_json = json.dumps(restaurant_info)
+                return Response(info_json)
                 # redirect to a new URL:
-        
-           
-        else:
-            location_info = request.body.decode("utf-8")
-            location_info = json.loads(location_info)
-            print("Data Value", location_info)
-            data['latitude'] = location_info['lat']
-            data['longitude'] = location_info['lon']
-       
-    
-   
-    context = {'form': form}
-    return render(request, 'homePage.html', context)
-
-#func to return top three matching orders
+        #else:
+            #location_info = request.body.decode("utf-8")
+            #location_info = json.loads(location_info)
+            #print("Data Value", location_info)
+            #data['latitude'] = location_info['lat']
+            #data['longitude'] = location_info['lon']
+            
+            
 def restaurant_filter(rest, carb_min, carb_max, cal_min, cal_max, fat_min, fat_max, pro_min, pro_max):
     rest_heap = []
     
@@ -111,7 +101,7 @@ def restaurant_filter(rest, carb_min, carb_max, cal_min, cal_max, fat_min, fat_m
     return rest_heap
 
 
-def find_nearby_places(lat, lon):
+def find_nearby_places():
     print("Key Value ",api_key[0])
     gmaps = googlemaps.Client(key = api_key[0])
    
@@ -122,3 +112,4 @@ def find_nearby_places(lat, lon):
     for res in places_result['results']:
         locations.append(res['name'])
     return locations
+    
