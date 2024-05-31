@@ -2,7 +2,7 @@ from django import forms
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 class RestForm(forms.Form):
-    restaurant = forms.CharField( max_length=100)
+    
     cal_min = forms.IntegerField()
     cal_max = forms.IntegerField() 
     

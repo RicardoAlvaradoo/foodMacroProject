@@ -7,9 +7,16 @@
     <title>Home</title>
 </head>
 <body>
+    
     <link rel="stylesheet" href="{% static 'home.css' %}">
+    <script src="{% static 'main.js' %}"></script>
 
-    <form action="/" method="post">
+    
+    <script>
+        window.onload = getLocation();
+    </script>
+       
+    <form action="/" method="POST" id="macros">
         <div class="flex-container">
         {% csrf_token %}
         <div class="row1"> 
@@ -33,9 +40,9 @@
     </div>
         
         {% render_field form.fat_man Placeholder="Fat Maximum" class+="form-control" %}
-        <input type="submit" value="Submit"> 
+        <input  type="submit" name="macros" value = "Enter Macros"> 
     </form>
-    
-      
+    {% block mymessage %}
+    {% endblock %}
 </body>
 </html>
