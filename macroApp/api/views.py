@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect
 
 from django.template import loader
 
-from .forms import RestForm
+
 
 import heapq
 import pandas as pd
@@ -24,37 +24,39 @@ def getData(request):
 data = {'latitude': 32.735232, 'longitude': -96.6524928 } 
 @api_view(['POST'])
 def orders(request):
-        print(request)
-        if  request.POST.get('macros') == 'Enter Macros' :
+        
+        post_data =  json.loads(request.body.decode('utf-8'))
+        print("Current Request in Orders:",post_data)
+        if  'cal_min' in post_data['user'] :
             # create a form instance and populate it with data from the request:
-            print(request.POST)
-            print(request)
-            serializer = RestForm(request.POST)
+            print("Serializing Data")
+            
             #pdb.set_trace()
             # check whether it's valid:
-            if serializer.is_valid():
+           
                 # process the data in form.cleaned_data as required
                 # ...)
-                
-                cal_min = serializer.cleaned_data['cal_min']
-                cal_max = serializer.cleaned_data['cal_max']
-                pro_min = serializer.cleaned_data['pro_min']
-                pro_max = serializer.cleaned_data['pro_max']
-                carb_min = serializer.cleaned_data['carb_min']
-                carb_max = serializer.cleaned_data['carb_max']
-                fat_min = serializer.cleaned_data['fat_min']
-                fat_max = serializer.cleaned_data['fat_max']
-                #get restaurants
-                
-                restaurant_list = find_nearby_places()
-                print(restaurant_list)
+            post_data = post_data['user']
+            cal_min = int(post_data['cal_min'])
+            cal_max = int(post_data['cal_max'])
+            pro_min = int(post_data['pro_min'])
+            pro_max = int(post_data['pro_max'])
+            carb_min = int(post_data['carb_min'])
+            carb_max = int(post_data['carb_max'])
+            fat_min = int(post_data['fat_min'])
+            fat_max = int(post_data['fat_max'])
+            #get restaurants
+            
+            restaurant_list = find_nearby_places()
+            print(restaurant_list)
 
-                #get top 3 orders
-                rest_heap = restaurant_filter(restaurant_list, carb_min, carb_max, cal_min, cal_max, fat_min, fat_max, pro_min, pro_max)
-                restaurant_info = {'data' : rest_heap}
-                info_json = json.dumps(restaurant_info)
-                return Response(info_json)
-                # redirect to a new URL:
+            #get top 3 orders
+            rest_heap = restaurant_filter(restaurant_list, carb_min, carb_max, cal_min, cal_max, fat_min, fat_max, pro_min, pro_max)
+            restaurant_info = {'data' : {'rest'  : rest_heap}}
+            info_json = json.dumps(restaurant_info)
+            print("Data to be sent, ",info_json)
+            return Response( info_json)
+            
         #else:
             #location_info = request.body.decode("utf-8")
             #location_info = json.loads(location_info)
@@ -62,7 +64,7 @@ def orders(request):
             #data['latitude'] = location_info['lat']
             #data['longitude'] = location_info['lon']
             
-            
+        return Response("I DK")
 def restaurant_filter(rest, carb_min, carb_max, cal_min, cal_max, fat_min, fat_max, pro_min, pro_max):
     rest_heap = []
     
