@@ -1,9 +1,11 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from .forms import RestForm
-from django.shortcuts import render, redirect
+from rest_framework import generics
+from .serializers import UserSerializer
+from django.contrib.auth.models import User
 
-from django.template import loader
+from rest_framework.permissions import IsAuthenticated, AllowAny
+
 
 
 
@@ -16,12 +18,18 @@ import pdb;
 import googlemaps
 import math
 api_key = os.environ.get('api_key'),
+class CreateUserView(generics.CreateAPIView):
+     queryset = User.objects.all()
+     serializer_class = UserSerializer
+     permission_classes = [AllowAny]
 @api_view(['GET'])
 def getData(request):
     person = {'name':'Dennis', 'age':28}
     return Response(person)
 
 data = {'latitude': 32.735232, 'longitude': -96.6524928 } 
+
+
 @api_view(['POST'])
 def orders(request):
         
