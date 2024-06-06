@@ -18,11 +18,8 @@ import pdb;
 import googlemaps
 import math
 api_key = os.environ.get('api_key'),
-class CreateUserView(generics.CreateAPIView):
-     queryset = User.objects.all()
-     serializer_class = UserSerializer
-     permission_classes = [AllowAny]
-@api_view(['GET'])
+
+
 def getData(request):
     person = {'name':'Dennis', 'age':28}
     return Response(person)
@@ -30,7 +27,12 @@ def getData(request):
 data = {'latitude': 32.735232, 'longitude': -96.6524928 } 
 
 
-@api_view(['POST'])
+
+class CreateUserView(generics.CreateAPIView):
+     queryset = User.objects.all()
+     serializer_class = UserSerializer
+     permission_classes = [AllowAny]
+     
 def orders(request):
         
         post_data =  json.loads(request.body.decode('utf-8'))
