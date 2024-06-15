@@ -18,6 +18,9 @@ from datetime import timedelta
 load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 API_KEY = str(os.getenv('SECRET_KEY'))
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:5173',
+]
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -28,7 +31,7 @@ SECRET_KEY = 'django-insecure-w!1+0xt27z3b8$$9efg%g&uofnd3aixqbuvug29ei4j_hvu_g)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
@@ -146,7 +149,3 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',
-]
-CORS_ALLOW_ALL_ORIGINS = True
