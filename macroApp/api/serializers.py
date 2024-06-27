@@ -2,7 +2,7 @@
 from rest_framework import serializers
 from .forms import RestForm
 from django.contrib.auth.models import User
-from .models import Profiles, Favorites
+from .models import Profile, Favorite
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -16,11 +16,11 @@ class UserSerializer(serializers.ModelSerializer):
     
 class Profile_Serializer(serializers.ModelSerializer):
     class Meta:
-        model = Profiles 
+        model = Profile
         fields = ["id","user", "name","cal_min", "cal_max", "protein_min", "protein_max", "fat_min","fat_max",  "carb_min", "carb_max"]
         extra_kwargs = {"user":{"read_only" : True}}
 class Favorite_Serializer(serializers.ModelSerializer):
       class Meta:
-        model = Favorites
+        model = Favorite
         fields = ["id","user", "restaurant","order_name", "fat", "carb", "calories"]
         extra_kwargs = {"user":{"read_only" : True}}

@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-class Profiles(models.Model):
+class Profile(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="profile")
     name = models.CharField(max_length=30)
 
@@ -22,7 +22,7 @@ class Profiles(models.Model):
         return self.name
 
 
-class Favorites(models.Model):
+class Favorite(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="favorites")
     restaurant = models.CharField(max_length=30)
     order_name = models.CharField(max_length=30)

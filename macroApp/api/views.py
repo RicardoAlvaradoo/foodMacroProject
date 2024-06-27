@@ -18,7 +18,7 @@ import json
 import googlemaps
 import math
 
-from .models import Profiles, Favorites
+from .models import Profile, Favorite
 api_key = os.environ.get('api_key'),
 
 
@@ -34,13 +34,17 @@ class CreateUserView(generics.CreateAPIView):
      queryset = User.objects.all()
      serializer_class = UserSerializer
      permission_classes = [AllowAny]
-     
+
 class Profile_Create(generics.ListCreateAPIView):
      serializer_class = Profile_Serializer
      permission_classes = [IsAuthenticated]
+   
      def get_queryset(self):
+
         user = self.request.user
-        return Profiles.Objects.all(User=user)
+        print("Current", user)
+        return Profiles.objects.filter(user=user)
+
      def perform_create(self, serializer):
         if serializer.isValid():
                serializer.save(user= self.request.user)
@@ -52,13 +56,13 @@ class Profile_Update(APIView):
     permission_classes = [IsAuthenticated]
     def get_queryset(self):
         user = self.request.user
-        return Profiles.Objects.all(User=user)
+        return Profiles.objects.filter(user=user)
 class Profile_Delete(APIView):
     serializer_class = Profile_Serializer
     permission_classes = [IsAuthenticated]
     def get_queryset(self):
         user = self.request.user
-        return Profiles.Objects.all(User=user)
+        return Profiles.objects.filter(user=user)
      
     
 class Orders(APIView):
