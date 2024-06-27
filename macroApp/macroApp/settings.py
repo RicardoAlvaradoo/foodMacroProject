@@ -60,7 +60,8 @@ INSTALLED_APPS = [
     'searchTool',
     'widget_tweaks',
     'rest_framework',
-     'corsheaders',
+    'corsheaders',
+    'api',
 ]
 
 MIDDLEWARE = [
