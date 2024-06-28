@@ -42,8 +42,8 @@ class Profile_Create(generics.ListCreateAPIView):
      def get_queryset(self):
 
         user = self.request.user
-        print("Current", user)
-        return Profiles.objects.filter(user=user)
+        print("Current", user, "orders ", Profile.objects.filter(user=user))
+        return Profile.objects.filter(user=user)
 
      def perform_create(self, serializer):
         if serializer.isValid():
@@ -56,15 +56,28 @@ class Profile_Update(APIView):
     permission_classes = [IsAuthenticated]
     def get_queryset(self):
         user = self.request.user
-        return Profiles.objects.filter(user=user)
-class Profile_Delete(APIView):
+        return Profile.objects.filter(user=user)
+class Profile_Delete(generics.DestroyAPIView):
     serializer_class = Profile_Serializer
     permission_classes = [IsAuthenticated]
     def get_queryset(self):
         user = self.request.user
-        return Profiles.objects.filter(user=user)
+        return Profile.objects.filter(user=user)
      
-    
+#favorites views
+
+class Favorite_Create(generics.ListAPIView):
+    serializer_class = Favorite_Serializer
+    permission_classes = [IsAuthenticated]
+    def get_queryset(self):
+         user = self.request.user
+         return Favorite.objects.filter(user=user)
+class Favorite_Delete(generics.DestroyAPIView):
+    serializer_class = Favorite_Serializer
+    permission_classes = [IsAuthenticated]
+    def get_queryset(self):
+         user = self.request.user
+         return Favorite.objects.filter(user=user)
 class Orders(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
