@@ -38,7 +38,7 @@ class CreateUserView(generics.CreateAPIView):
 class Profile_Create(generics.ListCreateAPIView):
      serializer_class = Profile_Serializer
      permission_classes = [IsAuthenticated]
-   
+  
      def get_queryset(self):
 
         user = self.request.user
@@ -46,17 +46,13 @@ class Profile_Create(generics.ListCreateAPIView):
         return Profile.objects.filter(user=user)
 
      def perform_create(self, serializer):
-        if serializer.isValid():
+        print(self.request)
+        if serializer.is_valid():
                serializer.save(user= self.request.user)
         else:
             print(serializer.errors)
             
-class Profile_Update(APIView):
-    serializer_class = Profile_Serializer
-    permission_classes = [IsAuthenticated]
-    def get_queryset(self):
-        user = self.request.user
-        return Profile.objects.filter(user=user)
+
 class Profile_Delete(generics.DestroyAPIView):
     serializer_class = Profile_Serializer
     permission_classes = [IsAuthenticated]

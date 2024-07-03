@@ -3,7 +3,7 @@ from . import views
 from api.views import CreateUserView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 urlpatterns = [
-    path('profile', views.Profile_Create.as_view(), name ='create_profile'),
+    path('profile/', views.Profile_Create.as_view(), name ='create_profile'),
     path('profile/delete/<int:pk>', views.Profile_Delete.as_view(), name = 'delete_profile'),
     path('favorite', views.Favorite_Create.as_view(), name ='add_fav'),
     path('favorite/delete/<int:pk>', views.Favorite_Delete.as_view(), name = 'delete_fav'),
