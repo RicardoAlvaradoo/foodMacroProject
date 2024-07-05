@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 class Profile(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="profile")
-    name = models.CharField(max_length=30)
+    profile_name = models.CharField(max_length=30)
 
     carb_min = models.IntegerField()
     carb_max = models.IntegerField()
@@ -10,8 +10,8 @@ class Profile(models.Model):
     cal_min = models.IntegerField()
     cal_max = models.IntegerField()
 
-    protein_min = models.IntegerField()
-    protein_max = models.IntegerField()
+    pro_min = models.IntegerField()
+    pro_max = models.IntegerField()
 
   
     fat_min = models.IntegerField()
@@ -19,8 +19,7 @@ class Profile(models.Model):
 
 
     def __str__(self):
-        return self.name
-
+        return self.profile_name
 
 class Favorite(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="favorites")

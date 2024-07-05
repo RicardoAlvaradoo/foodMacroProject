@@ -1,6 +1,6 @@
 
 from rest_framework import serializers
-from .forms import RestForm
+
 from django.contrib.auth.models import User
 from .models import Profile, Favorite
 class UserSerializer(serializers.ModelSerializer):
@@ -14,13 +14,15 @@ class UserSerializer(serializers.ModelSerializer):
             
         return user
     
-class Profile_Serializer(serializers.ModelSerializer):
+class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
-        fields = ["id","user", "name","cal_min", "cal_max", "protein_min", "protein_max", "fat_min","fat_max",  "carb_min", "carb_max"]
+        fields = ["id","user", "profile_name","cal_min", "pro_min" ,"carb_min", "fat_min", "cal_max", "pro_max",  "carb_max" , "fat_max"]
         extra_kwargs = {"user":{"read_only" : True}}
-class Favorite_Serializer(serializers.ModelSerializer):
-      class Meta:
+    
+class FavoriteSerializer(serializers.ModelSerializer):
+    class Meta:
         model = Favorite
-        fields = ["id","user", "restaurant","order_name", "fat", "carb", "calories"]
+        fields = ["id","user", "restaurant","order_name", "fat", "carb", "protein", "calories"]
         extra_kwargs = {"user":{"read_only" : True}}
+   

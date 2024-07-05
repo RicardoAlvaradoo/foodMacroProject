@@ -1,24 +1,25 @@
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+
 from rest_framework import generics
-from .serializers import UserSerializer, Profile_Serializer, Favorite_Serializer
+from .serializers import UserSerializer, ProfileSerializer, FavoriteSerializer
 from django.contrib.auth.models import User
 
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from rest_framework.views import APIView
-
+from rest_framework import status
 
 import heapq
 import pandas as pd
-
+import pdb;
 import os
 import json
-
+from rest_framework import status
 import googlemaps
 import math
-
+from rest_framework.settings import api_settings
 from .models import Profile, Favorite
+
 api_key = os.environ.get('api_key'),
 
 
@@ -30,31 +31,35 @@ data = {'latitude': 32.735232, 'longitude': -96.6524928 }
 
 
 
-class CreateUserView(generics.CreateAPIView):
-     queryset = User.objects.all()
-     serializer_class = UserSerializer
-     permission_classes = [AllowAny]
+
 
 class Profile_Create(generics.ListCreateAPIView):
-     serializer_class = Profile_Serializer
-     permission_classes = [IsAuthenticated]
-  
-     def get_queryset(self):
+    print("correct")
+    serializer_class = ProfileSerializer
+    permission_classes = [IsAuthenticated]
+   
+    def get_queryset(self):
 
         user = self.request.user
         print("Current", user, "orders ", Profile.objects.filter(user=user))
         return Profile.objects.filter(user=user)
 
-     def perform_create(self, serializer):
-        print(self.request)
+    def create(self, request, *args, **kwargs):
+        
+        data =  self.get_serializer(data=request.data['data'])
+        print(data)
+        data.is_valid(raise_exception=True)
+        self.perform_create(data)
+        headers = self.get_success_headers(data)
+        return Response(data.data, status=status.HTTP_201_CREATED, headers=headers)
+    def perform_create(self, serializer):
         if serializer.is_valid():
-               serializer.save(user= self.request.user)
+            serializer.save(user=self.request.user)
         else:
             print(serializer.errors)
-            
 
 class Profile_Delete(generics.DestroyAPIView):
-    serializer_class = Profile_Serializer
+    serializer_class = ProfileSerializer
     permission_classes = [IsAuthenticated]
     def get_queryset(self):
         user = self.request.user
@@ -62,18 +67,40 @@ class Profile_Delete(generics.DestroyAPIView):
      
 #favorites views
 
-class Favorite_Create(generics.ListAPIView):
-    serializer_class = Favorite_Serializer
+
+
+
+class Favorite_Create(generics.ListCreateAPIView):
+    serializer_class = FavoriteSerializer
     permission_classes = [IsAuthenticated]
     def get_queryset(self):
          user = self.request.user
          return Favorite.objects.filter(user=user)
+    def create(self, request, *args, **kwargs):
+        
+        data =  self.get_serializer(data=request.data)
+        
+        print(data)
+        data.is_valid(raise_exception=True)
+        print("SANITY CHECK1")
+        self.perform_create(data)
+        print("SANITY CHECK2")
+        headers = self.get_success_headers(data)
+        return Response(data.data, status=status.HTTP_201_CREATED, headers=headers)
+    def perform_create(self, serializer):
+        if serializer.is_valid():
+            serializer.save(user=self.request.user)
+        else:
+            print(serializer.errors)
+
 class Favorite_Delete(generics.DestroyAPIView):
-    serializer_class = Favorite_Serializer
+    serializer_class = FavoriteSerializer
     permission_classes = [IsAuthenticated]
     def get_queryset(self):
          user = self.request.user
          return Favorite.objects.filter(user=user)
+#getting order logic
+
 class Orders(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
@@ -81,7 +108,7 @@ class Orders(APIView):
             
             post_data =  json.loads(request.body.decode('utf-8'))
             print("Current Request in Orders:",post_data)
-            if  'cal_min' in post_data['user'] :
+            if  'cal_min' in post_data['data'] :
                 # create a form instance and populate it with data from the request:
                 print("Serializing Data")
                 
@@ -90,7 +117,7 @@ class Orders(APIView):
             
                     # process the data in form.cleaned_data as required
                     # ...)
-                post_data = post_data['user']
+                post_data = post_data['data']
                 cal_min = int(post_data['cal_min'])
                 cal_max = int(post_data['cal_max'])
                 pro_min = int(post_data['pro_min'])
@@ -119,6 +146,7 @@ class Orders(APIView):
                 #data['longitude'] = location_info['lon']
                 
             return Response("I DK")
+
 def restaurant_filter(rest, carb_min, carb_max, cal_min, cal_max, fat_min, fat_max, pro_min, pro_max):
     rest_heap = []
     
@@ -169,3 +197,7 @@ def find_nearby_places():
         locations.append(res['name'])
     return locations
     
+class CreateUserView(generics.CreateAPIView):
+     queryset = User.objects.all()
+     serializer_class = UserSerializer
+     permission_classes = [AllowAny]
