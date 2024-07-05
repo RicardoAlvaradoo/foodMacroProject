@@ -133,7 +133,8 @@ class Orders(APIView):
 
                 #get top 3 orders
                 rest_heap = restaurant_filter(restaurant_list, carb_min, carb_max, cal_min, cal_max, fat_min, fat_max, pro_min, pro_max)
-                restaurant_info = {'data' : {'rest'  : rest_heap}}
+                rest_heap = dict(rest_heap)
+                restaurant_info = { rest_heap}
                 info_json = json.dumps(restaurant_info)
                 print("Data to be sent, ",info_json)
                 return Response( info_json)
@@ -172,8 +173,8 @@ def restaurant_filter(rest, carb_min, carb_max, cal_min, cal_max, fat_min, fat_m
                     
                 
 
-                    food_tuple = (-food_score,(row['restaurant'],  row['item_name'],real_calories, real_fat, real_carbs,real_protein))
-                    
+                    food_dict = {'food_score' :-food_score, "info": {'restaurant': row['restaurant'], 'item_name' : row['item_name'], 'calories':real_calories, 'fat':  real_fat, 'carb': real_carbs, 'protein': real_protein}}
+                    food_tuple =  list(food_dict.items())
                     heapq.heappush(rest_heap, food_tuple )
                     
                     if len(rest_heap) > 3:
