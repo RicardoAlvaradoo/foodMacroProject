@@ -21,7 +21,8 @@ from rest_framework.settings import api_settings
 from .models import Profile, Favorite
 import geopy.distance
 from geopy.geocoders import GoogleV3
-api_key = os.environ.get('api_key'),
+api_key = os.environ.get('api_key') 
+geocode_key = os.environ.get('api_key_geocode'),
 
 
 def getData(request):
@@ -115,14 +116,15 @@ class Nearby_Restaurant(APIView):
             place_coord = nearby_restaurant_list[1][restaurant_index]
             
             distance_away = geopy.distance.geodesic((latitude, longitude), (place_coord['lat'], place_coord['lng']))
-            geolocator = GoogleV3(api_key[0])
+            geolocator = GoogleV3(geocode_key[0])
             restaurant_latitude = str(place_coord['lat'])
             restaurant_longitude = str(place_coord['lng'])
             
-            print("HARRO",  restaurant_latitude )
-            
+            print("HARRO",  (distance_away).miles )
+          
             location = geolocator.reverse((restaurant_latitude,  restaurant_longitude ))
-            return Response({"data": {'distance': distance_away, 'address':location}})
+            print(location)
+            return Response({"data": {'distance': str((distance_away).miles), 'address':str(location)}})
         else:{
             Response({"data": "Not Found"})
         }
@@ -218,8 +220,8 @@ def restaurant_filter(rest, carb_min, carb_max, cal_min, cal_max, fat_min, fat_m
 
 
 def find_nearby_places(data):
-    print("Key Value ",api_key[0])
-    gmaps = googlemaps.Client(key = api_key[0])
+   
+    gmaps = googlemaps.Client(key = api_key)
 
 
     places_result = gmaps.places_nearby(location=data , radius = 1000, open_now = False, type = 'restaurant')
@@ -234,3 +236,5 @@ class CreateUserView(generics.CreateAPIView):
      queryset = User.objects.all()
      serializer_class = UserSerializer
      permission_classes = [AllowAny]
+     def get(self, request):
+         return Response({'data': request.user.username})

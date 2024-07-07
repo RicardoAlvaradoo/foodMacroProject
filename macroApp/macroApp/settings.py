@@ -17,7 +17,8 @@ from datetime import timedelta
 
 load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
-API_KEY = str(os.getenv('SECRET_KEY'))
+
+
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
 ]
@@ -47,6 +48,7 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+   
 }
 # Application definition
 
