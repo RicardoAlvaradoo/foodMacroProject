@@ -19,7 +19,8 @@ import googlemaps
 import math
 from rest_framework.settings import api_settings
 from .models import Profile, Favorite
-
+import geopy.distance
+from geopy.geocoders import GoogleV3
 api_key = os.environ.get('api_key'),
 
 
@@ -46,7 +47,7 @@ class Profile_Create(generics.ListCreateAPIView):
 
     def create(self, request, *args, **kwargs):
         
-        data =  self.get_serializer(data=request.data['data'])
+        data =  self.get_serializer(data=request.data)
         print(data)
         data.is_valid(raise_exception=True)
         self.perform_create(data)
@@ -100,6 +101,31 @@ class Favorite_Delete(generics.DestroyAPIView):
          user = self.request.user
          return Favorite.objects.filter(user=user)
 #getting order logic
+class Nearby_Restaurant(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request, restaurant, latitude, longitude ):
+        
+        restaurant = self.kwargs["restaurant"]
+        data = {'latitude': latitude, 'longitude': longitude } 
+        nearby_restaurant_list = find_nearby_places(data)
+        
+        if restaurant in nearby_restaurant_list[0]:
+            
+            restaurant_index =  nearby_restaurant_list[0].index(restaurant)
+            place_coord = nearby_restaurant_list[1][restaurant_index]
+            
+            distance_away = geopy.distance.geodesic((latitude, longitude), (place_coord['lat'], place_coord['lng']))
+            geolocator = GoogleV3(api_key[0])
+            restaurant_latitude = str(place_coord['lat'])
+            restaurant_longitude = str(place_coord['lng'])
+            
+            print("HARRO",  restaurant_latitude )
+            
+            location = geolocator.reverse((restaurant_latitude,  restaurant_longitude ))
+            return Response({"data": {'distance': distance_away, 'address':location}})
+        else:{
+            Response({"data": "Not Found"})
+        }
 
 class Orders(APIView):
     permission_classes = [AllowAny]
@@ -108,16 +134,16 @@ class Orders(APIView):
             
             post_data =  json.loads(request.body.decode('utf-8'))
             print("Current Request in Orders:",post_data)
-            if  'cal_min' in post_data['data'] :
+            if  'cal_min' in post_data :
                 # create a form instance and populate it with data from the request:
-                print("Serializing Data")
+              
                 
                 #pdb.set_trace()
                 # check whether it's valid:
             
                     # process the data in form.cleaned_data as required
                     # ...)
-                post_data = post_data['data']
+               
                 cal_min = int(post_data['cal_min'])
                 cal_max = int(post_data['cal_max'])
                 pro_min = int(post_data['pro_min'])
@@ -127,17 +153,21 @@ class Orders(APIView):
                 fat_min = int(post_data['fat_min'])
                 fat_max = int(post_data['fat_max'])
                 #get restaurants
-                
-                restaurant_list = find_nearby_places()
-                print(restaurant_list)
+                location = {"latitude" : float(post_data['location']['latitude']), "longitude":float(post_data['location']['longitude'])}
+                restaurant_list = find_nearby_places(location)
+             
 
                 #get top 3 orders
                 rest_heap = restaurant_filter(restaurant_list, carb_min, carb_max, cal_min, cal_max, fat_min, fat_max, pro_min, pro_max)
-                rest_heap = dict(rest_heap)
-                restaurant_info = { rest_heap}
-                info_json = json.dumps(restaurant_info)
+                response = []
+                for i, j in rest_heap:
+
+                    food_info =  dict(j)
+                    response.append({ "food_score": i, "info":food_info, })
+                  
+                info_json = json.dumps(response)
                 print("Data to be sent, ",info_json)
-                return Response( info_json)
+                return Response( {"data": info_json})
                 
             #else:
                 #location_info = request.body.decode("utf-8")
@@ -160,7 +190,7 @@ def restaurant_filter(rest, carb_min, carb_max, cal_min, cal_max, fat_min, fat_m
     # _fat, carbohydrates, protein
     
     for index, row in food_info.iterrows():
-            if row['restaurant'] in rest:
+            if row['restaurant'] in rest[0]:
                 
                 if ((cal_min <= int(row['calories']) <= cal_max )):
                     real_calories = 0 if math.isnan(float(row['calories'])) else int(row['calories'])
@@ -172,30 +202,32 @@ def restaurant_filter(rest, carb_min, carb_max, cal_min, cal_max, fat_min, fat_m
                     food_score = abs(real_fat- ((fat_max + fat_min) // 2) ) + abs(real_protein - ((pro_max + pro_min) // 2)) + abs(real_carbs - ((carb_max + carb_min) // 2))
                     
                 
-
-                    food_dict = {'food_score' :-food_score, "info": {'restaurant': row['restaurant'], 'item_name' : row['item_name'], 'calories':real_calories, 'fat':  real_fat, 'carb': real_carbs, 'protein': real_protein}}
-                    food_tuple =  list(food_dict.items())
+                    food_dict = {'restaurant': row['restaurant'], 'item_name' : row['item_name'], 'calories':real_calories, 'fat':  real_fat, 'carb': real_carbs, 'protein': real_protein }
+                    food_tuple = (-food_score,  list(food_dict.items()))
+                    
+                    print("Food tuple ", food_tuple)
                     heapq.heappush(rest_heap, food_tuple )
                     
                     if len(rest_heap) > 3:
                         heapq.heappop(rest_heap)
-                        print(rest_heap)
+                        print("current rest heap ",rest_heap)
 
     
         
     return rest_heap
 
 
-def find_nearby_places():
+def find_nearby_places(data):
     print("Key Value ",api_key[0])
     gmaps = googlemaps.Client(key = api_key[0])
 
 
     places_result = gmaps.places_nearby(location=data , radius = 1000, open_now = False, type = 'restaurant')
     
-    locations = []
+    locations = [[], []]
     for res in places_result['results']:
-        locations.append(res['name'])
+        locations[0].append((res['name'] ))
+        locations[1].append(res['geometry']['location'])
     return locations
     
 class CreateUserView(generics.CreateAPIView):
