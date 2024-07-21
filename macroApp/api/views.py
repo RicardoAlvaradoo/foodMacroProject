@@ -107,9 +107,10 @@ class Nearby_Restaurant(APIView):
     def get(self, request, restaurant, latitude, longitude ):
         
         restaurant = self.kwargs["restaurant"]
-        data = {'latitude': latitude, 'longitude': longitude } 
+        data = {'latitude': latitude, 'longitude': longitude }
+        print(data) 
         nearby_restaurant_list = find_nearby_places(data)
-        
+        print(nearby_restaurant_list)
         if restaurant in nearby_restaurant_list[0]:
             
             restaurant_index =  nearby_restaurant_list[0].index(restaurant)
@@ -124,10 +125,11 @@ class Nearby_Restaurant(APIView):
           
             location = geolocator.reverse((restaurant_latitude,  restaurant_longitude ))
             print(location)
-            return Response({"data": {'distance': str((distance_away).miles), 'address':str(location)}})
-        else:{
-            Response({"data": "Not Found"})
-        }
+            return Response({"data": {'distance': str((distance_away).miles), 'address':str(location), 'coords': place_coord}})
+        
+            
+        return Response({"data": "Not Found"})
+        
 
 class Orders(APIView):
     permission_classes = [AllowAny]

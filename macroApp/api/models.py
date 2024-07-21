@@ -23,8 +23,8 @@ class Profile(models.Model):
 
 class Favorite(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="favorites")
-    restaurant = models.CharField(max_length=30)
-    order_name = models.CharField(max_length=30)
+    restaurant = models.CharField(max_length=100)
+    order_name = models.CharField(max_length=100)
     fat = models.IntegerField()
     carb = models.IntegerField()
     protein = models.IntegerField() 
